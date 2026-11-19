@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import type { ChatTurn, Citation, StreamEvent, UploadedDoc } from "@/lib/types";
 
 const MAX_DOCUMENTS = 5;
+const MAX_FILE_MB = 4;
 
 type Part = { kind: "text"; text: string } | { kind: "cite"; n: number };
 
@@ -41,6 +42,11 @@ export default function Home() {
     const room = MAX_DOCUMENTS - docs.length;
     if (files.length > room) {
       setUploadError(`تقدر ترفع ${MAX_DOCUMENTS} ملفات كحد أقصى.`);
+      return;
+    }
+    const tooBig = Array.from(files).find((f) => f.size > MAX_FILE_MB * 1024 * 1024);
+    if (tooBig) {
+      setUploadError(`الملف "${tooBig.name}" أكبر من ${MAX_FILE_MB} ميجابايت.`);
       return;
     }
     setUploading(true);

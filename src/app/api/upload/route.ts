@@ -25,7 +25,7 @@ export async function POST(request: Request) {
   }
   if (file.size > MAX_FILE_BYTES) {
     return Response.json(
-      { error: "حجم الملف أكبر من 20 ميجابايت." },
+      { error: "حجم الملف أكبر من 4 ميجابايت." },
       { status: 400 },
     );
   }

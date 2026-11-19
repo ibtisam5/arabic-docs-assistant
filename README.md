@@ -12,7 +12,7 @@ Ask questions about your PDF files in Arabic (Gulf dialect, Modern Standard Arab
 - **Page-level citations.** Every cited sentence links to the exact quoted passage and page.
 - **Dialect-aware.** It replies in the language and dialect of the question.
 - **Streaming responses.** Answers appear as they're generated.
-- **Multi-document.** Ask across up to 5 PDFs at once.
+- **Multi-document.** Ask across up to 5 PDFs at once (4 MB each).
 - **Cost-aware.** Files are uploaded once (Files API) and reused by ID, and the documents are prompt-cached, so follow-up questions cost much less.
 - **RTL-first UI** with dark mode and a mobile layout.
 

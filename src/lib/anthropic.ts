@@ -16,7 +16,8 @@ export function hasApiKey() {
 
 // Limits that keep requests small and costs predictable.
 export const MAX_DOCUMENTS = 5;
-export const MAX_FILE_BYTES = 20 * 1024 * 1024; // 20 MB per PDF
+// Vercel rejects function request bodies above ~4.5 MB, so stay under it.
+export const MAX_FILE_BYTES = 4 * 1024 * 1024; // 4 MB per PDF
 export const FILE_TTL_SECONDS = 24 * 60 * 60; // uploaded files expire after a day
 
 export const SYSTEM_PROMPT = `أنت "مساعد المستندات"، مساعد ذكي يجيب عن الأسئلة اعتمادًا على المستندات المرفقة فقط.
