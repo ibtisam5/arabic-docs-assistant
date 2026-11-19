@@ -68,14 +68,24 @@ function memoryLimiter(max: number): Limiter {
 
 function makeLimiter(prefix: string, max: number, window: "sliding" | "fixed"): Limiter {
   if (!redis) return memoryLimiter(max);
-  return new Ratelimit({
+  const ratelimit = new Ratelimit({
     redis,
     prefix: `docs-assistant:${prefix}`,
+    timeout: 3000,
     limiter:
       window === "sliding"
         ? Ratelimit.slidingWindow(max, "1 d")
         : Ratelimit.fixedWindow(max, "1 d"),
   });
+  return {
+    async limit(id) {
+      const result = await ratelimit.limit(id);
+      // On a Redis timeout the library lets the request through; we would
+      // rather block than spend without a limit.
+      if (result.reason === "timeout") throw new Error("rate limit check timed out");
+      return result;
+    },
+  };
 }
 
 const limiters = {
