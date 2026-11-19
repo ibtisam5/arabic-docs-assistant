@@ -4,7 +4,9 @@ Ask questions about your PDF files in Arabic (Gulf dialect, Modern Standard Arab
 
 > ارفع ملفات PDF (لوائح، أدلة، عقود، مناهج) واسأل عنها بالعربي. المساعد يجاوب من الملفات فقط ويذكر المصدر ورقم الصفحة.
 
-<!-- TODO: add a screenshot or GIF here, and a link to the live demo -->
+**🔗 Live demo: [arabic-docs-assistant.vercel.app](https://arabic-docs-assistant.vercel.app)**. Try it with the sample PDF in [`samples/`](samples/training-rules-sample.pdf).
+
+<!-- TODO: add a screenshot or GIF here -->
 
 ## Features
 
