@@ -26,10 +26,22 @@ type Kind = "question" | "upload";
 type Check = { success: boolean; remaining: number; reset: number };
 type Limiter = { limit: (id: string) => Promise<Check> };
 
-// Vercel's Upstash integration names the variables KV_REST_API_*; Upstash's own
-// dashboard names them UPSTASH_REDIS_REST_*. Accept either.
-const redisUrl = process.env.UPSTASH_REDIS_REST_URL ?? process.env.KV_REST_API_URL;
-const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN ?? process.env.KV_REST_API_TOKEN;
+// Upstash's dashboard names the variables UPSTASH_REDIS_REST_*, and Vercel's
+// integration names them <PREFIX>_KV_REST_API_* where the prefix is chosen when
+// the database is connected (often none, so KV_REST_API_*). Accept all of them.
+function findRedisEnv() {
+  const env = process.env;
+  if (env.UPSTASH_REDIS_REST_URL && env.UPSTASH_REDIS_REST_TOKEN) {
+    return { url: env.UPSTASH_REDIS_REST_URL, token: env.UPSTASH_REDIS_REST_TOKEN };
+  }
+  for (const [name, url] of Object.entries(env)) {
+    const match = name.match(/^(.*)(KV_REST_API|REDIS_REST)_URL$/);
+    const token = match && env[`${match[1]}${match[2]}_TOKEN`];
+    if (url && token) return { url, token };
+  }
+  return { url: undefined, token: undefined };
+}
+const { url: redisUrl, token: redisToken } = findRedisEnv();
 const redis = redisUrl && redisToken ? new Redis({ url: redisUrl, token: redisToken }) : null;
 
 // Sent as a response header so a deployment can be checked from outside.
