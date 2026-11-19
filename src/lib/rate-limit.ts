@@ -32,6 +32,9 @@ const redisUrl = process.env.UPSTASH_REDIS_REST_URL ?? process.env.KV_REST_API_U
 const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN ?? process.env.KV_REST_API_TOKEN;
 const redis = redisUrl && redisToken ? new Redis({ url: redisUrl, token: redisToken }) : null;
 
+// Sent as a response header so a deployment can be checked from outside.
+export const LIMIT_STORE = redis ? "redis" : "memory";
+
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 function memoryLimiter(max: number): Limiter {
@@ -118,6 +121,12 @@ export async function checkLimit(kind: Kind, request: Request): Promise<LimitRes
 export function limitedResponse(result: Extract<LimitResult, { ok: false }>) {
   return Response.json(
     { error: result.message },
-    { status: 429, headers: { "Retry-After": String(result.retryAfterSeconds) } },
+    {
+      status: 429,
+      headers: {
+        "Retry-After": String(result.retryAfterSeconds),
+        "X-RateLimit-Store": LIMIT_STORE,
+      },
+    },
   );
 }

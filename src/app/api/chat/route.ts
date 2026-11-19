@@ -7,7 +7,7 @@ import {
   MODEL,
   SYSTEM_PROMPT,
 } from "@/lib/anthropic";
-import { checkLimit, limitedResponse } from "@/lib/rate-limit";
+import { checkLimit, LIMIT_STORE, limitedResponse } from "@/lib/rate-limit";
 import type { ChatTurn, Citation, StreamEvent, UploadedDoc } from "@/lib/types";
 
 type ChatRequest = { documents: UploadedDoc[]; messages: ChatTurn[] };
@@ -153,6 +153,7 @@ export async function POST(request: Request) {
       "Content-Type": "application/x-ndjson; charset=utf-8",
       "Cache-Control": "no-store",
       "X-Questions-Remaining": String(limit.remaining),
+      "X-RateLimit-Store": LIMIT_STORE,
     },
   });
 }

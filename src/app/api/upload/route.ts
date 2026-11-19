@@ -6,7 +6,7 @@ import {
   MAX_FILE_BYTES,
   MISSING_KEY_MESSAGE,
 } from "@/lib/anthropic";
-import { checkLimit, limitedResponse } from "@/lib/rate-limit";
+import { checkLimit, LIMIT_STORE, limitedResponse } from "@/lib/rate-limit";
 
 // Receives one PDF from the browser and stores it with the Claude Files API,
 // so later chat requests can reference it by file_id instead of re-sending it.
@@ -39,7 +39,10 @@ export async function POST(request: Request) {
       file: await toFile(file, file.name, { type: "application/pdf" }),
       expires_in_seconds: FILE_TTL_SECONDS,
     });
-    return Response.json({ fileId: uploaded.id, title: file.name });
+    return Response.json(
+      { fileId: uploaded.id, title: file.name },
+      { headers: { "X-RateLimit-Store": LIMIT_STORE } },
+    );
   } catch (error) {
     console.error("upload failed", error);
     if (error instanceof Anthropic.AuthenticationError) {
