@@ -16,6 +16,7 @@ Ask questions about your PDF files in Arabic (Gulf dialect, Modern Standard Arab
 - **Streaming responses.** Answers appear as they're generated.
 - **Multi-document.** Ask across up to 5 PDFs at once (4 MB each).
 - **Cost-aware.** Files are uploaded once (Files API) and reused by ID, and the documents are prompt-cached, so follow-up questions cost much less.
+- **Spend protection.** Rate limits per visitor (questions and uploads per day) plus a daily cap across all visitors, backed by Upstash Redis so they hold across serverless instances.
 - **RTL-first UI** with dark mode and a mobile layout.
 
 ## Tech stack
@@ -25,6 +26,7 @@ Ask questions about your PDF files in Arabic (Gulf dialect, Modern Standard Arab
 | Framework | Next.js 16 (App Router), React 19, TypeScript |
 | Styling | Tailwind CSS 4 |
 | AI | Claude API (`@anthropic-ai/sdk`): Files API, Citations, streaming, prompt caching |
+| Rate limiting | Upstash Redis + `@upstash/ratelimit` (in-memory fallback for local dev) |
 | Deploy | Vercel |
 
 ## How it works
@@ -41,6 +43,8 @@ Browser ──question + file_ids──▶ /api/chat ──▶ Claude Messages A
 3. **Cite:** The route turns `citations_delta` events into page citations and sends them after the text they support. The UI renders them as `[1]` markers with a "Sources" list.
 
 The API key stays on the server. The browser only ever talks to the Next.js routes.
+
+**Rate limiting** (`src/lib/rate-limit.ts`): both routes check limits before calling Claude. Each visitor (by IP) gets a sliding 24-hour window of questions and uploads, and all questions together share a fixed daily cap. A blocked request gets `429` with `Retry-After`. If Redis can't be reached, requests are blocked rather than allowed through unlimited.
 
 ## Run locally
 
@@ -59,6 +63,9 @@ Open http://localhost:3000.
 1. Push this repo to GitHub.
 2. Import it on [vercel.com/new](https://vercel.com/new).
 3. Add the `ANTHROPIC_API_KEY` environment variable and deploy.
+4. In the project's **Storage** tab, create an **Upstash for Redis** database (free tier) and connect it to the project. Vercel adds the Redis variables, so redeploy afterwards.
+
+Optional variables to tune the limits (defaults in brackets): `RATE_LIMIT_QUESTIONS_PER_VISITOR` (10), `RATE_LIMIT_UPLOADS_PER_VISITOR` (10), `RATE_LIMIT_QUESTIONS_PER_DAY` (100).
 
 ## Roadmap
 

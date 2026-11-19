@@ -7,6 +7,7 @@ import {
   MODEL,
   SYSTEM_PROMPT,
 } from "@/lib/anthropic";
+import { checkLimit, limitedResponse } from "@/lib/rate-limit";
 import type { ChatTurn, Citation, StreamEvent, UploadedDoc } from "@/lib/types";
 
 type ChatRequest = { documents: UploadedDoc[]; messages: ChatTurn[] };
@@ -65,6 +66,9 @@ export async function POST(request: Request) {
   if (!isValid(body)) {
     return Response.json({ error: "طلب غير صالح." }, { status: 400 });
   }
+
+  const limit = await checkLimit("question", request);
+  if (!limit.ok) return limitedResponse(limit);
 
   const encoder = new TextEncoder();
   const stream = new ReadableStream<Uint8Array>({
@@ -148,6 +152,7 @@ export async function POST(request: Request) {
     headers: {
       "Content-Type": "application/x-ndjson; charset=utf-8",
       "Cache-Control": "no-store",
+      "X-Questions-Remaining": String(limit.remaining),
     },
   });
 }

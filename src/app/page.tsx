@@ -29,6 +29,7 @@ export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
+  const [remaining, setRemaining] = useState<number | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
   const bottom = useRef<HTMLDivElement>(null);
 
@@ -114,6 +115,9 @@ export default function Home() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ documents: docs, messages: history }),
       });
+      if (res.status === 429) setRemaining(0);
+      const left = res.headers.get("X-Questions-Remaining");
+      if (left !== null) setRemaining(Number(left));
       if (!res.ok || !res.body) {
         const data = await res.json().catch(() => ({}));
         throw new Error(data.error ?? "صار خطأ، حاول مرة ثانية.");
@@ -311,6 +315,15 @@ export default function Home() {
               {busy ? "..." : "اسأل"}
             </button>
           </div>
+          {remaining !== null && (
+            <p className="mx-auto mt-2 max-w-3xl text-xs text-muted">
+              {remaining > 0
+                ? remaining === 2
+                  ? "باقي لك سؤالين اليوم"
+                  : `باقي لك ${remaining} ${remaining <= 10 && remaining >= 3 ? "أسئلة" : "سؤال"} اليوم`
+                : "خلصت أسئلتك لليوم"}
+            </p>
+          )}
         </form>
       </main>
     </div>

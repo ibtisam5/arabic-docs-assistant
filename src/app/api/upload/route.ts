@@ -6,6 +6,7 @@ import {
   MAX_FILE_BYTES,
   MISSING_KEY_MESSAGE,
 } from "@/lib/anthropic";
+import { checkLimit, limitedResponse } from "@/lib/rate-limit";
 
 // Receives one PDF from the browser and stores it with the Claude Files API,
 // so later chat requests can reference it by file_id instead of re-sending it.
@@ -29,6 +30,9 @@ export async function POST(request: Request) {
       { status: 400 },
     );
   }
+
+  const limit = await checkLimit("upload", request);
+  if (!limit.ok) return limitedResponse(limit);
 
   try {
     const uploaded = await anthropic.files.upload({
